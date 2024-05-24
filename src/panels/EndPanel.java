@@ -1,3 +1,4 @@
+
 package panels;
 
 import java.awt.Color;
@@ -30,7 +31,7 @@ public class EndPanel extends JPanel {
 	}
 
 	public EndPanel(Object o) {
-		//¹öÆ°
+		//Â¹Ã¶Ã†Â°
 		btnNewButton = new JButton(btn);
 		btnNewButton.setName("endAccept");
 		btnNewButton.addMouseListener((MouseListener) o);
@@ -40,7 +41,7 @@ public class EndPanel extends JPanel {
 		btnNewButton.setContentAreaFilled(false);
 		add(btnNewButton);
 		
-		//Á¡¼ö ±ÛÀÚ 
+		//ÃÂ¡Â¼Ã¶ Â±Ã›Ã€Ãš 
 		lblNewLabel_1 = new JLabel("SCORE");	
 		lblNewLabel_1.setHorizontalAlignment(SwingConstants.CENTER);
 		lblNewLabel_1.setFont(new Font("Gill Sans Ultra Bold", Font.PLAIN, 37));
