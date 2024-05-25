@@ -1,4 +1,3 @@
-
 package main;
 
 import java.awt.EventQueue;
@@ -9,6 +8,7 @@ import java.awt.event.MouseEvent;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import ingame.CookieImg;
 import panels.EndPanel;
@@ -23,13 +23,13 @@ import java.awt.CardLayout;
 // windowBuilder 로 프레임만 제작하고 나머지는 입력
 
 public class Main extends listenAdapter {
-
+	
 	private JFrame frame; // 창을 띄우기 위한 프레임
 
 	private IntroPanel introPanel; // 인트로
 	
-	private SelectButtonPanel selectButtonPanel; //1p, 2p 버튼 선택
-
+	private SelectButtonPanel selectButtonPanel; //버튼 선택
+	
 	private SelectPanel selectPanel; // 캐릭터 선택
 
 	private GamePanel gamePanel; // 게임진행
@@ -40,22 +40,26 @@ public class Main extends listenAdapter {
 
 	private CookieImg ci; // 쿠키이미지
 
+	// GamePanel 객체를 반환하는 메서드
 	public GamePanel getGamePanel() {
 		return gamePanel;
 	}
 
+	// GamePanel 객체를 설정하는 메서드
 	public void setGamePanel(GamePanel gamePanel) {
 		this.gamePanel = gamePanel;
 	}
 
+	// EndPanel 객체를 반환하는 메서드
 	public EndPanel getEndPanel() {
 		return endPanel;
 	}
-
-
+	
+	
 	/**
 	 * Launch the application.
 	 */
+	// 애플리케이션 실행 메서드
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -69,61 +73,73 @@ public class Main extends listenAdapter {
 		});
 	}
 
+	// Main 클래스의 생성자
 	public Main() {
 		initialize();
 	}
 
+	// 초기화 메서드
 	private void initialize() {
+		// JFrame 객체 초기화
 		frame = new JFrame();
-		frame.setBounds(100, 100, 800, 500); // 창 사이즈 (100,100좌표는 아래의 frame.setLocationRelativeTo(null) 때문에 의미가 없어진다)
-		frame.setLocationRelativeTo(null); // 창을 화면 중앙에 배치
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // 엑스버튼을 누르면 종료
-		cl = new CardLayout(0, 0); // 카드레이아웃 객체 생성
-		frame.getContentPane().setLayout(cl); // 프레임을 카드레이아웃으로 변경
+		// 창의 크기 설정
+		frame.setBounds(100, 100, 800, 500);
+		// 창을 화면 중앙에 배치
+		frame.setLocationRelativeTo(null);
+		// 창을 닫을 때 프로그램 종료 설정
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		// CardLayout 객체 초기화
+		cl = new CardLayout(0, 0);
+		// 프레임의 레이아웃을 CardLayout으로 설정
+		frame.getContentPane().setLayout(cl);
 
 		introPanel = new IntroPanel();
 		introPanel.addMouseListener(this); // intro패널은 여기서 바로 넣는 방식으로 마우스리스너를 추가함.
-		
+        
+		// SelectButtonPanel 객체 초기화
 		selectButtonPanel = new SelectButtonPanel(this);
 		
 		selectPanel = new SelectPanel(this); // Main의 리스너를 넣기위한 this
 		gamePanel = new GamePanel(frame, cl, this); // Main의 프레임 및 카드레이아웃을 이용하고 리스너를 넣기위한 this
 		endPanel = new EndPanel(this); // Main의 리스너를 넣기위한 this
 
-		// 모든 패널의 레이아웃을 null로 변환
+		// 모든 패널의 레이아웃을 null로 설정
 		introPanel.setLayout(null);
 		selectButtonPanel.setLayout(null);
 		selectPanel.setLayout(null);
 		gamePanel.setLayout(null);
 		endPanel.setLayout(null);
 
-		// 프레임에 패널들을 추가한다.(카드 레이아웃을 위한 패널들)
+		// 프레임에 패널들 추가
 		frame.getContentPane().add(introPanel, "intro");
 		frame.getContentPane().add(selectButtonPanel, "selectbutton");
 		frame.getContentPane().add(selectPanel, "select");
 		frame.getContentPane().add(gamePanel, "game");
 		frame.getContentPane().add(endPanel, "end");
-
 	}
 
+	// 마우스 버튼이 눌렸을 때 호출되는 메서드
 	@Override
-	public void mousePressed(MouseEvent e) { // mouseClicked로 변경가능
-		if (e.getComponent().toString().contains("IntroPanel")) { // IntroPanel에서 마우스를 눌렀다면
+	public void mousePressed(MouseEvent e) {
+		// IntroPanel에서 마우스를 눌렀다면
+		if (e.getComponent().toString().contains("IntroPanel")) {
 			try {
+				// 300ms 동안 일시 정지
 				Thread.sleep(300);
 			} catch (InterruptedException e1) {
 				e1.printStackTrace();
 			}
 			
-			cl.show(frame.getContentPane(), "selectbutton"); // selectbutton 패널을 카드레이아웃 최상단으로 변경
-	        selectButtonPanel.requestFocus(); // 리스너를 selectButtonPanel에 강제로 줌
-	        selectButtonPanel.getComponent(0).requestFocusInWindow(); // 첫 번째 버튼에 포커스 설정
-	    }  else if (e.getComponent().getName().equals("bnt1") || e.getComponent().getName().equals("bnt2")) { 
+			// selectbutton 패널을 카드레이아웃 최상단으로 변경
+			cl.show(frame.getContentPane(), "selectbutton");
+			// 리스너를 selectButtonPanel에 강제로 줌
+	        selectButtonPanel.requestFocus();
+	    }  else if (e.getComponent().getName().equals("btn1") || e.getComponent().getName().equals("btn2")) {
 	        // bnt1 또는 bnt2라는 이름을 가진 버튼을 눌렀다면
-	        cl.show(frame.getContentPane(), "select"); // select 패널을 카드레이아웃 최상단으로 변경
-	        selectPanel.requestFocus(); // 리스너를 selectPanel에 강제로 줌
-			
-		} else if (e.getComponent().getName().equals("StartBtn")) { // StartBtn이라는 이름을 가진 버튼을 눌렀다면
+	        cl.show(frame.getContentPane(), "select");
+	        // 리스너를 selectPanel에 강제로 줌
+	        selectPanel.requestFocus();
+	    } else if (e.getComponent().getName().equals("StartBtn")) { // StartBtn이라는 이름을 가진 버튼을 눌렀다면
 			if (selectPanel.getCi() == null) {
 				JOptionPane.showMessageDialog(null, "캐릭터를 골라주세요"); // 캐릭터를 안골랐을경우 팝업
 			} else {
