@@ -116,6 +116,8 @@ public class Main extends listenAdapter {
 		frame.getContentPane().add(selectPanel, "select");
 		frame.getContentPane().add(gamePanel, "game");
 		frame.getContentPane().add(endPanel, "end");
+		
+		
 	}
 
 	// 마우스 버튼이 눌렸을 때 호출되는 메서드
@@ -134,11 +136,16 @@ public class Main extends listenAdapter {
 			cl.show(frame.getContentPane(), "selectbutton");
 			// 리스너를 selectButtonPanel에 강제로 줌
 	        selectButtonPanel.requestFocus();
-	    }  else if (e.getComponent().getName().equals("btn1") || e.getComponent().getName().equals("btn2")) {
-	        // bnt1 또는 bnt2라는 이름을 가진 버튼을 눌렀다면
-	        cl.show(frame.getContentPane(), "select");
-	        // 리스너를 selectPanel에 강제로 줌
-	        selectPanel.requestFocus();
+	    }   else if (e.getComponent().getName().equals("btn1")) {
+            // bnt1라는 이름을 가진 버튼을 눌렀다면
+            cl.show(frame.getContentPane(), "select");
+            // 리스너를 selectPanel에 강제로 줌
+            selectPanel.requestFocus();
+        } else if (e.getComponent().getName().equals("btn2")) { // btn2라는 이름을 가진 버튼을 눌렀다면
+        	openNewGameWindow(); // 새로운 창 생성
+            startServerAndClient(); // 서버와 클라이언트 시작
+            cl.show(frame.getContentPane(), "select");
+            selectPanel.requestFocus();
 	    } else if (e.getComponent().getName().equals("StartBtn")) { // StartBtn이라는 이름을 가진 버튼을 눌렀다면
 			if (selectPanel.getCi() == null) {
 				JOptionPane.showMessageDialog(null, "캐릭터를 골라주세요"); // 캐릭터를 안골랐을경우 팝업
@@ -163,4 +170,40 @@ public class Main extends listenAdapter {
 			selectPanel.requestFocus(); // 리스너를 select패널에 강제로 줌
 		}
 	}
+	private void openNewGameWindow() {
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                try {
+                    Main window = new Main();
+                    window.frame.setVisible(true);
+                    window.cl.show(window.frame.getContentPane(), "select"); // 새로운 창에서 바로 select 패널을 보여줌
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+	private static void startServerAndClient() {
+        new Thread(() -> {
+            try {
+                Process serverProcess = new ProcessBuilder("java", "-cp", "bin", "network.GameServer").start();
+                System.out.println("서버가 연결되었습니다");
+                serverProcess.waitFor();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }).start();
+
+        new Thread(() -> {
+            try {
+                Thread.sleep(1000); // 서버가 먼저 시작될 수 있도록 대기
+                Process clientProcess = new ProcessBuilder("java", "-cp", "bin", "network.GameClient").start();
+                System.out.println("클라이언트가 연결되었습니다");
+                clientProcess.waitFor();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }).start();
+    }
 }
