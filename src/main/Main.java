@@ -17,7 +17,7 @@ import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
-// windowBuilder 로 프레임만 제작하고 나머지는 입력
+// windowBuilder 로 프레임만 제작하고 나머지는 입력dd
 
 public class Main extends listenAdapter {
     
