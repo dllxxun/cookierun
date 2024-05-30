@@ -150,6 +150,7 @@ public class Main extends listenAdapter {
             new Thread(() -> {
                 try {
                     Thread.sleep(1000); // 서버가 먼저 시작될 수 있도록 대기
+                    
                     GameClient.main(null); // 클라이언트 시작
                 } catch (InterruptedException e1) {
                     e1.printStackTrace();
@@ -160,10 +161,14 @@ public class Main extends listenAdapter {
             if (selectPanel.getCi() == null) {
                 JOptionPane.showMessageDialog(null, "캐릭터를 골라주세요"); // 캐릭터를 선택하지 않았을 경우 팝업
             } else {
-                cl.show(frame.getContentPane(), "game");
-                gamePanel.gameSet(selectPanel.getCi());
-                gamePanel.gameStart();
-                gamePanel.requestFocus();
+            	if (isUser1) {
+                    GameClient.readyUser1();
+                    isUser1 = false;
+                } else {
+                    GameClient.readyUser2();
+                }
+            	
+                
             }
         } else if (e.getComponent().getName().equals("StartBtn")) {
             // StartBtn을 클릭하면 gamePanel로 전환
@@ -218,5 +223,11 @@ public class Main extends listenAdapter {
         } else {
             JOptionPane.showMessageDialog(null, "다른 플레이어의 준비를 기다리세요."); // 다른 플레이어가 준비되지 않았을 경우 팝업
         }
+    }
+    public void startGame() {
+        cl.show(frame.getContentPane(), "game");
+        gamePanel.gameSet(selectPanel.getCi());
+        gamePanel.gameStart();
+        gamePanel.requestFocus();
     }
 }
