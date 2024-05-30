@@ -47,6 +47,8 @@ public class SelectPanel extends JPanel {
 	
 	// 시작 버튼
 	private JButton ReadyBtn;
+	// 유저가 user1인지 여부를 나타내는 변수
+	private boolean isUser1;  
 	
 	// 게임에서 사용할 쿠키 이미지들을 담을 오브젝트
 	private CookieImg ci;
@@ -71,7 +73,7 @@ public class SelectPanel extends JPanel {
 
 		// 준비버튼
 		ReadyBtn = new JButton(ready);
-		ReadyBtn .setName("ReadyBtn ");
+		ReadyBtn .setName("ReadyBtn");
 		// 마우스 이벤트 처리를 위해 MouseListener를 구현한 객체(o)를 StartBtn에 추가
 		ReadyBtn .addMouseListener((MouseListener) o);
 		ReadyBtn .setBounds(254, 334, 291, 81); //x, y, width, height
@@ -206,5 +208,6 @@ public class SelectPanel extends JPanel {
             Main.user2Ready = true;
         }
     }
+    
 	
 }

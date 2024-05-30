@@ -138,11 +138,13 @@ public class Main extends listenAdapter {
             cl.show(frame.getContentPane(), "selectbutton");
             selectButtonPanel.requestFocus();
         } else if (e.getComponent().getName().equals("btn1")) {
+            // btn1을 클릭하면 selectPanel로 넘어감
             cl.show(frame.getContentPane(), "select");
             selectPanel.requestFocus();
-        } else if (e.getComponent().getName().equals("btn2")) { 
-            selectPanel.showReadyButton(); // ReadyBtn을 표시하는 메서드 호출
+        } else if (e.getComponent().getName().equals("btn2")) {
+            // btn2를 클릭하면 새 창이 생성되고 서버와 클라이언트가 시작됨
             cl.show(frame.getContentPane(), "select"); // 기존 창에서 selectPanel로 변경
+            selectPanel.showReadyButton(); // ReadyBtn을 표시하는 메서드 호출
             openNewGameWindow(); // 새로운 창 생성 및 selectPanel로 표시
             new Thread(() -> GameServer.main(null)).start(); // 서버 시작
             new Thread(() -> {
@@ -153,17 +155,18 @@ public class Main extends listenAdapter {
                     e1.printStackTrace();
                 }
             }).start();
-        } else if (e.getComponent().getName().equals("ReadyBtn")) { // ReadyBtn이라는 이름을 가진 버튼을 눌렀다면
+        } else if (e.getComponent().getName().equals("ReadyBtn")) {
+            // ReadyBtn을 클릭하면 gamePanel로 전환
             if (selectPanel.getCi() == null) {
                 JOptionPane.showMessageDialog(null, "캐릭터를 골라주세요"); // 캐릭터를 선택하지 않았을 경우 팝업
             } else {
-                selectPanel.setReady(); // 준비 상태 설정
-                GameClient.setReady(isUser1); // 준비 상태 전송
-                checkIfBothReady(); // 두 유저가 모두 준비되었는지 확인
-                //cl.show(frame.getContentPane(), "game");
-               
+                cl.show(frame.getContentPane(), "game");
+                gamePanel.gameSet(selectPanel.getCi());
+                gamePanel.gameStart();
+                gamePanel.requestFocus();
             }
-        } else if (e.getComponent().getName().equals("StartBtn")) { 
+        } else if (e.getComponent().getName().equals("StartBtn")) {
+            // StartBtn을 클릭하면 gamePanel로 전환
             if (selectPanel.getCi() == null) {
                 JOptionPane.showMessageDialog(null, "캐릭터를 골라주세요");
             } else {
@@ -173,6 +176,7 @@ public class Main extends listenAdapter {
                 gamePanel.requestFocus();
             }
         } else if (e.getComponent().getName().equals("endAccept")) {
+            // 게임 종료 후 설정
             frame.getContentPane().remove(gamePanel);
             gamePanel = new GamePanel(frame, cl, this);
             gamePanel.setLayout(null);
@@ -186,6 +190,8 @@ public class Main extends listenAdapter {
             selectPanel.requestFocus();
         }
     }
+
+   
 
     private void openNewGameWindow() {
         EventQueue.invokeLater(new Runnable() {
@@ -208,6 +214,7 @@ public class Main extends listenAdapter {
             System.out.println("게임을 시작합니다");
             cl.show(frame.getContentPane(), "game"); // gamePanel로 전환
             gamePanel.gameStart(); // 게임 시작
+            gamePanel.requestFocus();
         } else {
             JOptionPane.showMessageDialog(null, "다른 플레이어의 준비를 기다리세요."); // 다른 플레이어가 준비되지 않았을 경우 팝업
         }
