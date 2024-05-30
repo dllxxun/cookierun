@@ -1,3 +1,3 @@
 #자바로 쿠키런...
 
-![Uploading intro.png…]()
+![intro](https://github.com/dllxxun/cookierun/assets/135424223/9708ef94-fcae-43b3-b21c-07d9968e3dd6)
