@@ -2,10 +2,16 @@ package main;
 
 import java.awt.EventQueue;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import ingame.CookieImg;
+import panels.SelectButtonPanel;
+import network.GameServer;
+import network.GameClient;
+
 import panels.EndPanel;
 import panels.GamePanel;
 import panels.IntroPanel;
@@ -17,7 +23,7 @@ import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
-// windowBuilder 로 프레임만 제작하고 나머지는 입력dd
+// windowBuilder 로 프레임만 제작하고 나머지는 입력
 
 public class Main extends listenAdapter {
     
@@ -37,6 +43,11 @@ public class Main extends listenAdapter {
 
     private CookieImg ci; // 쿠키이미지
 
+    public static boolean user1Ready = false;
+    public static boolean user2Ready = false;
+    public static boolean isUser1 = true;
+    public static boolean isUser2 = true;
+    
     // GamePanel 객체를 반환하는 메서드
     public GamePanel getGamePanel() {
         return gamePanel;
@@ -51,7 +62,6 @@ public class Main extends listenAdapter {
     public EndPanel getEndPanel() {
         return endPanel;
     }
-    
     
     /**
      * Launch the application.
@@ -89,7 +99,7 @@ public class Main extends listenAdapter {
         cl = new CardLayout(0, 0);
         // 프레임의 레이아웃을 CardLayout으로 설정
         frame.getContentPane().setLayout(cl);
-
+        
         introPanel = new IntroPanel();
         introPanel.addMouseListener(this); // intro패널은 여기서 바로 넣는 방식으로 마우스리스너를 추가함.
         
@@ -118,50 +128,61 @@ public class Main extends listenAdapter {
     // 마우스 버튼이 눌렸을 때 호출되는 메서드
     @Override
     public void mousePressed(MouseEvent e) {
-        // IntroPanel에서 마우스를 눌렀다면
         if (e.getComponent().toString().contains("IntroPanel")) {
             try {
-                // 300ms 동안 일시 정지
                 Thread.sleep(300);
             } catch (InterruptedException e1) {
                 e1.printStackTrace();
             }
-            
-            // selectbutton 패널을 카드레이아웃 최상단으로 변경
             cl.show(frame.getContentPane(), "selectbutton");
-            // 리스너를 selectButtonPanel에 강제로 줌
             selectButtonPanel.requestFocus();
         } else if (e.getComponent().getName().equals("btn1")) {
-            // bnt1라는 이름을 가진 버튼을 눌렀다면
             cl.show(frame.getContentPane(), "select");
-            // 리스너를 selectPanel에 강제로 줌
             selectPanel.requestFocus();
-        } else if (e.getComponent().getName().equals("btn2")) { // btn2라는 이름을 가진 버튼을 눌렀다면
+        } else if (e.getComponent().getName().equals("btn2")) { 
+            selectPanel.showReadyButton(); // ReadyBtn을 표시하는 메서드 호출
             cl.show(frame.getContentPane(), "select"); // 기존 창에서 selectPanel로 변경
             openNewGameWindow(); // 새로운 창 생성 및 selectPanel로 표시
-            startServerAndClient(); // 서버와 클라이언트 시작
-        } else if (e.getComponent().getName().equals("StartBtn")) { // StartBtn이라는 이름을 가진 버튼을 눌렀다면
+            new Thread(() -> GameServer.main(null)).start(); // 서버 시작
+            new Thread(() -> {
+                try {
+                    Thread.sleep(1000); // 서버가 먼저 시작될 수 있도록 대기
+                    GameClient.main(null); // 클라이언트 시작
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
+            }).start();
+        } else if (e.getComponent().getName().equals("ReadyBtn")) { // ReadyBtn이라는 이름을 가진 버튼을 눌렀다면
             if (selectPanel.getCi() == null) {
-                JOptionPane.showMessageDialog(null, "캐릭터를 골라주세요"); // 캐릭터를 안골랐을경우 팝업
+                JOptionPane.showMessageDialog(null, "캐릭터를 골라주세요"); // 캐릭터를 선택하지 않았을 경우 팝업
             } else {
-                cl.show(frame.getContentPane(), "game"); // 캐릭터를 골랐다면 게임패널을 카드레이아웃 최상단으로 변경
-                gamePanel.gameSet(selectPanel.getCi()); // 쿠키이미지를 넘겨주고 게임패널 세팅
-                gamePanel.gameStart(); // 게임시작
-                gamePanel.requestFocus(); // 리스너를 game패널에 강제로 줌
+                selectPanel.setReady(); // 준비 상태 설정
+                GameClient.setReady(isUser1); // 준비 상태 전송
+                checkIfBothReady(); // 두 유저가 모두 준비되었는지 확인
+                //cl.show(frame.getContentPane(), "game");
+               
             }
-            
-        } else if (e.getComponent().getName().equals("endAccept")) { // endAccept 이라는 이름을 가진 버튼을 눌렀다면
-            frame.getContentPane().remove(gamePanel); // 방금 했던 게임 패널을 프레임에서 삭제
-            gamePanel = new GamePanel(frame, cl, this); // 게임패널을 새 패널로 교체
+        } else if (e.getComponent().getName().equals("StartBtn")) { 
+            if (selectPanel.getCi() == null) {
+                JOptionPane.showMessageDialog(null, "캐릭터를 골라주세요");
+            } else {
+                cl.show(frame.getContentPane(), "game");
+                gamePanel.gameSet(selectPanel.getCi());
+                gamePanel.gameStart();
+                gamePanel.requestFocus();
+            }
+        } else if (e.getComponent().getName().equals("endAccept")) {
+            frame.getContentPane().remove(gamePanel);
+            gamePanel = new GamePanel(frame, cl, this);
             gamePanel.setLayout(null);
-            frame.getContentPane().add(gamePanel, "game"); // 프레임에 새 게임패널 추가(카드레이아웃 하단)
-            
-            frame.getContentPane().remove(selectPanel); // 방금 선택했던 select패널을 삭제
-            selectPanel = new SelectPanel(this); // select 패널을 새 패널로 교체
+            frame.getContentPane().add(gamePanel, "game");
+
+            frame.getContentPane().remove(selectPanel);
+            selectPanel = new SelectPanel(this);
             selectPanel.setLayout(null);
-            frame.getContentPane().add(selectPanel, "select"); // 프레임에 새 select패널 추가(카드레이아웃 하단)
-            cl.show(frame.getContentPane(), "select"); // 새 select패널을 카드레이아웃 최상단으로 이동 (화면에 보임)
-            selectPanel.requestFocus(); // 리스너를 select패널에 강제로 줌
+            frame.getContentPane().add(selectPanel, "select");
+            cl.show(frame.getContentPane(), "select");
+            selectPanel.requestFocus();
         }
     }
 
@@ -172,33 +193,22 @@ public class Main extends listenAdapter {
                     Main window = new Main();
                     window.frame.setVisible(true);
                     window.cl.show(window.frame.getContentPane(), "select"); // 새로운 창에서 바로 select 패널을 보여줌
+                    window.selectPanel.showReadyButton(); // 새로운 창에서도 ReadyBtn 보이기
+                    new Thread(() -> GameClient.main(null)).start(); // 클라이언트 시작
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         });
     }
-
-    private static void startServerAndClient() {
-        new Thread(() -> {
-            try {
-                Process serverProcess = new ProcessBuilder("java", "-cp", "bin", "network.GameServer").start();
-                System.out.println("서버가 연결되었습니다");
-                serverProcess.waitFor();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        }).start();
-
-        new Thread(() -> {
-            try {
-                Thread.sleep(1000); // 서버가 먼저 시작될 수 있도록 대기
-                Process clientProcess = new ProcessBuilder("java", "-cp", "bin", "network.GameClient").start();
-                System.out.println("클라이언트가 연결되었습니다");
-                clientProcess.waitFor();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        }).start();
+    private void checkIfBothReady() {
+        if (user1Ready && user2Ready) {
+        	System.out.println("준비완료 되었습니다");
+            System.out.println("게임을 시작합니다");
+            cl.show(frame.getContentPane(), "game"); // gamePanel로 전환
+            gamePanel.gameStart(); // 게임 시작
+        } else {
+            JOptionPane.showMessageDialog(null, "다른 플레이어의 준비를 기다리세요."); // 다른 플레이어가 준비되지 않았을 경우 팝업
+        }
     }
 }

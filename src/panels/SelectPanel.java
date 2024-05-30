@@ -2,6 +2,7 @@
 package panels;
 
 import java.awt.Color;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -14,6 +15,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 import ingame.CookieImg;
+import main.Main;
 
 public class SelectPanel extends JPanel {
 
@@ -32,6 +34,7 @@ public class SelectPanel extends JPanel {
 
 	// 시작 버튼 이미지아이콘
 	private ImageIcon start = new ImageIcon("img/select/GameStartBtn.png");
+	private ImageIcon ready = new ImageIcon("img/select/readyButton.png");
 	
 	// 이미지를 선택할 버튼
 	private JButton ch1;
@@ -42,6 +45,9 @@ public class SelectPanel extends JPanel {
 	// 시작 버튼
 	private JButton StartBtn;
 	
+	// 시작 버튼
+	private JButton ReadyBtn;
+	
 	// 게임에서 사용할 쿠키 이미지들을 담을 오브젝트
 	private CookieImg ci;
 
@@ -51,7 +57,7 @@ public class SelectPanel extends JPanel {
 	}
 
 	public SelectPanel(Object o) {
-
+		
 		// 시작 버튼
 		StartBtn = new JButton(start);
 		StartBtn.setName("StartBtn");
@@ -63,6 +69,18 @@ public class SelectPanel extends JPanel {
 		StartBtn.setContentAreaFilled(false);
 		StartBtn.setFocusPainted(false);
 
+		// 준비버튼
+		ReadyBtn = new JButton(ready);
+		ReadyBtn .setName("ReadyBtn ");
+		// 마우스 이벤트 처리를 위해 MouseListener를 구현한 객체(o)를 StartBtn에 추가
+		ReadyBtn .addMouseListener((MouseListener) o);
+		ReadyBtn .setBounds(254, 334, 291, 81); //x, y, width, height
+		add(ReadyBtn );
+		ReadyBtn .setBorderPainted(false);
+		ReadyBtn .setContentAreaFilled(false);
+		ReadyBtn .setFocusPainted(false);
+		ReadyBtn.setVisible(false); // 초기에는 숨김
+		
 		// 캐릭터 ch1
 		ch1 = new JButton(ch01);
 		ch1.setName("ch1");
@@ -175,4 +193,18 @@ public class SelectPanel extends JPanel {
 		add(selectTxt);
 
 	}
+	// ReadyBtn을 표시하는 메서드 추가
+    public void showReadyButton() {
+        StartBtn.setVisible(false); // StartBtn 숨기기
+        ReadyBtn.setVisible(true); // ReadyBtn 보이기
+    }
+    // setReady 메서드 추가
+    public void setReady() {
+        if (Main.isUser1) {
+            Main.user1Ready = true;
+        } else {
+            Main.user2Ready = true;
+        }
+    }
+	
 }
