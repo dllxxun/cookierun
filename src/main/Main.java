@@ -23,7 +23,7 @@ import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
-// windowBuilder 로 프레임만 제작하고 나머지는 입력
+// windowBuilder 로 프레임만 제작하고 나머지는 입력dd
 
 public class Main extends listenAdapter {
     
@@ -34,6 +34,7 @@ public class Main extends listenAdapter {
     private SelectButtonPanel selectButtonPanel; //버튼 선택
     
     private SelectPanel selectPanel; // 캐릭터 선택
+    
 
     private GamePanel gamePanel; // 게임진행
 
