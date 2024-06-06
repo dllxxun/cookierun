@@ -1,4 +1,3 @@
-
 package panels;
 
 import java.awt.Color;

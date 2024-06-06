@@ -10,13 +10,19 @@ import javax.swing.JOptionPane;
 import ingame.CookieImg;
 import panels.SelectButtonPanel;
 import network.GameServer;
-import network.GameClient;
+import network.GameClient1;
+import network.GameClient2;
 
 import panels.EndPanel;
 import panels.GamePanel;
 import panels.IntroPanel;
 import panels.SelectPanel;
-import panels.SelectButtonPanel;
+import panels.MinOrRunPanel;
+import minigame.MiniGameStartPanel;
+import minigame.CookieFactory;
+import minigame.DescriptionPanel;
+import minigame.MiniGameEndPanel;
+
 import main.listenAdapter;
 import java.awt.CardLayout;
 import javax.swing.JButton;
@@ -35,10 +41,19 @@ public class Main extends listenAdapter {
     
     private SelectPanel selectPanel; // 캐릭터 선택
     
-
+    private MinOrRunPanel minOrRunPanel;
+    
     private GamePanel gamePanel; // 게임진행
 
     private EndPanel endPanel; // 게임결과
+    
+	private CookieFactory cookieFactoryPanel; // 미니게임 패널 추가
+	
+	private DescriptionPanel descriptionPanel;
+	
+	private MiniGameStartPanel miniGameStartPanel; //미니게임 intro 패널 추가
+	
+	private MiniGameEndPanel miniGameEndPanel;
 
     private CardLayout cl; // 카드 레이이웃 오브젝트
 
@@ -104,6 +119,8 @@ public class Main extends listenAdapter {
         introPanel = new IntroPanel();
         introPanel.addMouseListener(this); // intro패널은 여기서 바로 넣는 방식으로 마우스리스너를 추가함.
         
+        minOrRunPanel = new MinOrRunPanel(this);
+        
         // SelectButtonPanel 객체 초기화
         selectButtonPanel = new SelectButtonPanel(this);
         
@@ -113,6 +130,7 @@ public class Main extends listenAdapter {
 
         // 모든 패널의 레이아웃을 null로 설정
         introPanel.setLayout(null);
+        minOrRunPanel.setLayout(null);
         selectButtonPanel.setLayout(null);
         selectPanel.setLayout(null);
         gamePanel.setLayout(null);
@@ -120,11 +138,63 @@ public class Main extends listenAdapter {
 
         // 프레임에 패널들 추가
         frame.getContentPane().add(introPanel, "intro");
+        frame.getContentPane().add(minOrRunPanel, "minOrRun");
         frame.getContentPane().add(selectButtonPanel, "selectbutton");
         frame.getContentPane().add(selectPanel, "select");
         frame.getContentPane().add(gamePanel, "game");
         frame.getContentPane().add(endPanel, "end");
+        
+        // minigame용 코드
+        miniGameStartPanel = new MiniGameStartPanel(this);
+		frame.getContentPane().add(miniGameStartPanel, "miniGameStart");
+		
+		descriptionPanel = new DescriptionPanel(this);
+		frame.getContentPane().add(descriptionPanel, "description");
+		
+		cookieFactoryPanel = new CookieFactory(this);
+		cookieFactoryPanel.setLayout(null);
+		frame.getContentPane().add(cookieFactoryPanel, "cookieFactory");
+		
+		miniGameEndPanel = new MiniGameEndPanel(this);
+		frame.getContentPane().add(miniGameEndPanel, "miniGameEnd");
+		
     }
+    
+    public void showSelectPanel() {
+		cl.show(frame.getContentPane(), "select");
+		selectPanel.requestFocus();
+	}
+	
+    public void showSelectbuttonPanel() {
+		cl.show(frame.getContentPane(), "selectbutton");
+		selectButtonPanel.requestFocus();
+	}
+    
+	public void showCookieFactoryPanel() {
+		cl.show(frame.getContentPane(), "cookieFactory");
+		cookieFactoryPanel.requestFocus();
+	}
+	
+	public void showMiniGameIntro() {
+		cl.show(frame.getContentPane(), "miniGameStart");
+		miniGameStartPanel.requestFocus();
+	}
+	
+	public void showDescriptionPanel() {
+		cl.show(frame.getContentPane(), "description");
+		descriptionPanel.requestFocus();
+	}
+	
+	public void returnToStart() {
+		cl.show(frame.getContentPane(), "miniGameStart");
+		miniGameStartPanel.requestFocus();
+	}
+	
+	public void showMiniGameEndPanel(int score) {
+		miniGameEndPanel.setMiniGameScoreLabel(score);
+		cl.show(frame.getContentPane(), "miniGameEnd");
+		miniGameEndPanel.requestFocus();
+	}
 
     // 마우스 버튼이 눌렸을 때 호출되는 메서드
     @Override
@@ -135,6 +205,14 @@ public class Main extends listenAdapter {
             } catch (InterruptedException e1) {
                 e1.printStackTrace();
             }
+            cl.show(frame.getContentPane(), "minOrRun"); // IntroPanel에서 minOrRunPanel로 전환
+            minOrRunPanel.requestFocus();
+        } else if (e.getComponent().getName().equals("minibtn")) {
+        	// minigamestartLabel을 클릭하면 미니게임 시작 패널로 넘어감
+            cl.show(frame.getContentPane(), "miniGameStart");
+            miniGameStartPanel.requestFocus();
+        } else if (e.getComponent().getName().equals("cookiebtn")) {
+            // cookierunstartLabel을 클릭하면 selectButtonPanel로 넘어감
             cl.show(frame.getContentPane(), "selectbutton");
             selectButtonPanel.requestFocus();
         } else if (e.getComponent().getName().equals("btn1")) {
@@ -151,7 +229,8 @@ public class Main extends listenAdapter {
                 try {
                     Thread.sleep(1000); // 서버가 먼저 시작될 수 있도록 대기
                     
-                    GameClient.main(null); // 클라이언트 시작
+                    GameClient1.main(null); // 클라이언트 시작
+                    GameClient2.main(null); // 클라이언트 시작
                 } catch (InterruptedException e1) {
                     e1.printStackTrace();
                 }
@@ -162,12 +241,14 @@ public class Main extends listenAdapter {
                 JOptionPane.showMessageDialog(null, "캐릭터를 골라주세요"); // 캐릭터를 선택하지 않았을 경우 팝업
             } else {
             	if (isUser1) {
-                    GameClient.readyUser1();
+                    GameClient1.readyUser1();
                     isUser1 = false;
-                } else {
-                    GameClient.readyUser2();
+                    user1Ready=true;
+                } if(isUser2) {
+                    GameClient2.readyUser2();
+                    user2Ready=true;
                 }
-            	
+                checkIfBothReady(); 
                 
             }
         } else if (e.getComponent().getName().equals("StartBtn")) {
@@ -180,6 +261,10 @@ public class Main extends listenAdapter {
                 gamePanel.gameStart();
                 gamePanel.requestFocus();
             }
+        } else if ("backButtonImage".equals(e.getComponent().getName())) {
+            // MiniGameEndPanel에서 backButtonImage를 클릭하면 selectPanel로 전환
+            cl.show(frame.getContentPane(), "select");
+            selectPanel.requestFocus();
         } else if (e.getComponent().getName().equals("endAccept")) {
             // 게임 종료 후 설정
             frame.getContentPane().remove(gamePanel);
@@ -194,9 +279,10 @@ public class Main extends listenAdapter {
             cl.show(frame.getContentPane(), "select");
             selectPanel.requestFocus();
         }
+        
     }
 
-   
+    
 
     private void openNewGameWindow() {
         EventQueue.invokeLater(new Runnable() {
@@ -206,7 +292,8 @@ public class Main extends listenAdapter {
                     window.frame.setVisible(true);
                     window.cl.show(window.frame.getContentPane(), "select"); // 새로운 창에서 바로 select 패널을 보여줌
                     window.selectPanel.showReadyButton(); // 새로운 창에서도 ReadyBtn 보이기
-                    new Thread(() -> GameClient.main(null)).start(); // 클라이언트 시작
+                    new Thread(() -> GameClient1.main(null)).start(); // 클라이언트 시작
+                    new Thread(() -> GameClient2.main(null)).start(); // 클라이언트 시작
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

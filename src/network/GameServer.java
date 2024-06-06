@@ -51,15 +51,13 @@ public class GameServer {
     private static void handleClientMessage(String message, String username) {
         if (message.equals("user1_ready")) {
             user1Ready = true;
-            System.out.println("user1: 준비되었습니다");
+            System.out.println("[Server] user1: 준비되었습니다");
         } else if (message.equals("user2_ready")) {
             user2Ready = true;
-            System.out.println("user2: 준비되었습니다");
+            System.out.println("[Server] user2: 준비되었습니다");
         }
 
         if (user1Ready && user2Ready) {
-            System.out.println("준비완료");
-            System.out.println("게임을 시작합니다");
             startGame();
         }
     }
