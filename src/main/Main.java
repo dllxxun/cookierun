@@ -304,9 +304,7 @@ public class Main extends listenAdapter {
         if (user1Ready && user2Ready) {
         	System.out.println("준비완료 되었습니다");
             System.out.println("게임을 시작합니다");
-            cl.show(frame.getContentPane(), "game"); // gamePanel로 전환
-            gamePanel.gameStart(); // 게임 시작
-            gamePanel.requestFocus();
+            startGame(); // 게임 시작
         } else {
             JOptionPane.showMessageDialog(null, "다른 플레이어의 준비를 기다리세요."); // 다른 플레이어가 준비되지 않았을 경우 팝업
         }
